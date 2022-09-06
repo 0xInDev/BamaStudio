@@ -1,0 +1,3 @@
+[submodule "QtWindowsCMake"]
+	path = QtWindowsCMake
+	url = https://github.com/ssakone/QtWindowsCMake
