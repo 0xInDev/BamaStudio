@@ -1,0 +1,57 @@
+name: 👷 Continuous Deployment
+
+on:
+  push:
+    branches:
+      - main
+      - ci
+
+  pull_request:
+    branches:
+      - main
+
+#os: [ubuntu-latest, macOS-latest, windows-latest]
+jobs:
+  Build:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [windows-latest]
+        version: ['6.3.2']
+    steps:
+      - name: Add msbuild to PATH
+        if: matrix.os == 'windows-latest'
+        uses: microsoft/setup-msbuild@v1.0.3 
+      -
+        uses: actions/checkout@v2
+      -
+        name: ⬇ Install Qt
+        uses: jurplel/install-qt-action@v2
+        with:
+          version: ${{ matrix.version }}
+          dir: ${{ github.workspace }}/Qt-${{ runner.os }}-${{ matrix.version }}
+          cached: ${{ steps.cache-qt.outputs.cache-hit }}
+          aqtversion: ==1.2.2
+      -
+        name: 🔧 CMake
+        run: |
+          git submodule update --init --recursive
+          mkdir -p build
+          cmake -DCMAKE_BUILD_TYPE="Release" -DQT_WINDOWS_QT_ROOT="D:\a\BamaStudio\BamaStudio\Qt-Windows-6.3.2\Qt\6.3.2\msvc2019_64" -B build -S .
+        shell: bash
+      -
+        name: 🔨 BaMaStudio
+        if: matrix.os != 'windows-latest'
+        run: |
+          cmake --build build --target "BuMa" --config "Release" -j 
+      -
+        name: 🔨 BaMaStudio (Windows)
+        if: matrix.os == 'windows-latest'
+        run: |
+          cmake --build build --target "BaMaStudioInstallerX64" --config "Release" -j 
+      - uses: actions/upload-artifact@v3
+        if: matrix.os == 'windows-latest'
+        with:
+          retention-days: 2
+          name: "BaMaStudioInstallerX64Release Binary"
+          path: "build/BaMaStudioInstallerX64Release.exe"
