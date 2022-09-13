@@ -5,12 +5,19 @@ import QtQuick.Dialogs
 
 import BStudio
 
+import SIUtils
+
 ApplicationWindow {
     id: window
     width: 1280
-    height: 500
+    height: 750
     visible: true
     title: qsTr("Bama Studio")
+    property string projectName: ""
+    property bool projectFileExist: false
+    property string projectPath: ""
+    property string projectData: ""
+    property bool projectUpdated: false
     signal news()
 
     component TextInputField: TextField {
@@ -26,6 +33,72 @@ ApplicationWindow {
             border.color: 'white'
             radius: 8
         }
+    }
+
+    function saveProject() {
+        let data = []
+        let projectData = {name: window.projectName}
+        for(let i = 0; i < spriteModel.count; i++) {
+            let elem = spriteModel.get(i)
+            data.push(elem)
+        }
+        projectData['spriteSequences'] = data
+        window.projectData = JSON.stringify(projectData)
+        if(window.projectFileExist) {
+            SIUtils.writeText(window.projectPath, window.projectData)
+        } else {
+            saveDialog.open()
+        }
+    }
+
+    function saveAsProject() {
+        let data = []
+        let projectData = {name: window.projectName}
+        for(let i = 0; i < spriteModel.count; i++) {
+            let elem = spriteModel.get(i)
+            data.push(elem)
+        }
+        projectData['spriteSequences'] = data
+        window.projectData = JSON.stringify(projectData)
+        saveDialog.open()
+    }
+
+    function openProject(currentFile) {
+        let data = SIUtils.readText(currentFile.toString().replace("file://",""))
+        let datas = JSON.parse(data)
+        console.log(data)
+        window.projectName = datas['name']
+        spriteModel.clear()
+        for(let i = 0; i < datas['spriteSequences'].length; i++) {
+            spriteModel.append(datas['spriteSequences'][i])
+        }
+        stackView.push(sViewer)
+        window.news()
+        window.projectFileExist = true
+        window.projectPath = currentFile.toString().replace("file://","")
+    }
+
+    FileDialog {
+        id: saveDialog
+        fileMode: FileDialog.SaveFile
+        nameFilters: ["Project files (*.bsp)"]
+        defaultSuffix: 'bsp'
+        acceptLabel: "Enregistrer"
+        onAccepted: {
+            SIUtils.writeText(currentFile.toString().replace("file://",""), window.projectData)
+            window.projectPath = currentFile.toString().replace("file://","")
+            window.projectFileExist = true
+            console.log("saved")
+        }
+    }
+
+    FileDialog {
+        id: openDialog
+        fileMode: FileDialog.OpenFile
+        nameFilters: ["Project files (*.bsp)"]
+        defaultSuffix: 'bsp'
+        acceptLabel: "Ouvrir"
+        onAccepted: openProject(currentFile)
     }
 
     Component {
@@ -49,12 +122,15 @@ ApplicationWindow {
             }
             Action {
                 text: qsTr("&Ouvrir...")
+                onTriggered: openDialog.open()
             }
             Action {
                 text: qsTr("&Enregistrer")
+                onTriggered: window.saveProject()
             }
             Action {
                 text: qsTr("Enregistrer sous...")
+                onTriggered: window.saveAsProject()
             }
             MenuSeparator {}
             Action {
@@ -140,6 +216,7 @@ ApplicationWindow {
                         frameHeight: parseFloat(p_frameHeight.text),
                         sprites: []
                     }
+                    window.projectName = p_name.text.replace(" ", "-")
                     spriteModel.append(data)
                     newDialog.close()
                     stackView.push(sViewer)
