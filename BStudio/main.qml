@@ -37,14 +37,16 @@ ApplicationWindow {
 
     function saveProject() {
         let data = []
-        let projectData = {name: window.projectName}
-        for(let i = 0; i < spriteModel.count; i++) {
+        let projectData = {
+            name: window.projectName
+        }
+        for (let i = 0; i < spriteModel.count; i++) {
             let elem = spriteModel.get(i)
             data.push(elem)
         }
         projectData['spriteSequences'] = data
         window.projectData = JSON.stringify(projectData)
-        if(window.projectFileExist) {
+        if (window.projectFileExist) {
             SIUtils.writeText(window.projectPath, window.projectData)
         } else {
             saveDialog.open()
@@ -53,8 +55,10 @@ ApplicationWindow {
 
     function saveAsProject() {
         let data = []
-        let projectData = {name: window.projectName}
-        for(let i = 0; i < spriteModel.count; i++) {
+        let projectData = {
+            name: window.projectName
+        }
+        for (let i = 0; i < spriteModel.count; i++) {
             let elem = spriteModel.get(i)
             data.push(elem)
         }
@@ -64,18 +68,18 @@ ApplicationWindow {
     }
 
     function openProject(currentFile) {
-        let data = SIUtils.readText(currentFile.toString().replace("file://",""))
+        let data = SIUtils.readText(currentFile.toString().replace("file://", ""))
         let datas = JSON.parse(data)
         console.log(data)
         window.projectName = datas['name']
         spriteModel.clear()
-        for(let i = 0; i < datas['spriteSequences'].length; i++) {
+        for (let i = 0; i < datas['spriteSequences'].length; i++) {
             spriteModel.append(datas['spriteSequences'][i])
         }
         stackView.push(sViewer)
         window.news()
         window.projectFileExist = true
-        window.projectPath = currentFile.toString().replace("file://","")
+        window.projectPath = currentFile.toString().replace("file://", "")
     }
 
     FileDialog {
@@ -85,8 +89,8 @@ ApplicationWindow {
         defaultSuffix: 'bsp'
         acceptLabel: "Enregistrer"
         onAccepted: {
-            SIUtils.writeText(currentFile.toString().replace("file://",""), window.projectData)
-            window.projectPath = currentFile.toString().replace("file://","")
+            SIUtils.writeText(currentFile.toString().replace("file://", ""), window.projectData)
+            window.projectPath = currentFile.toString().replace("file://", "")
             window.projectFileExist = true
             console.log("saved")
         }
@@ -108,8 +112,8 @@ ApplicationWindow {
         }
     }
 
-    function createObject(component, parent,sub={}) {
-        var sprite = component.createObject(parent,sub);
+    function createObject(component, parent, sub = {}) {
+        var sprite = component.createObject(parent, sub);
         return sprite;
     }
 
@@ -118,7 +122,7 @@ ApplicationWindow {
             title: qsTr("&Fichier")
             Action {
                 text: qsTr("&Nouveau...")
-                onTriggered: newDialog.open()//stackView.push(sViewer)
+                onTriggered: newDialog.open() //stackView.push(sViewer)
             }
             Action {
                 text: qsTr("&Ouvrir...")
@@ -173,31 +177,41 @@ ApplicationWindow {
         ColumnLayout {
             anchors.fill: parent
             anchors.margins: 10
-            Text { text: 'Nom du project' }
+            Text {
+                text: 'Nom du project'
+            }
             TextInputField {
                 id: p_name
                 text: ""
                 placeholderText: "Nom du project"
             }
-            Text { text: 'Width' }
+            Text {
+                text: 'Width'
+            }
             TextInputField {
                 id: p_width
                 text: "0"
                 placeholderText: "width"
             }
-            Text { text: 'Height' }
+            Text {
+                text: 'Height'
+            }
             TextInputField {
                 id: p_height
                 text: "0"
                 placeholderText: "height"
             }
-            Text { text: 'FrameWidth' }
+            Text {
+                text: 'FrameWidth'
+            }
             TextInputField {
                 id: p_frameWidth
                 text: "0"
                 placeholderText: "frameWidth"
             }
-            Text { text: 'FrameHeight' }
+            Text {
+                text: 'FrameHeight'
+            }
             TextInputField {
                 id: p_frameHeight
                 text: "0"
@@ -244,44 +258,57 @@ ApplicationWindow {
     }
     Popup {
         id: new_sprite_dialog
-        property var spriterListView
+        property
+        var spriterListView
         anchors.centerIn: parent
         width: 450
         height: 700
         ColumnLayout {
             anchors.fill: parent
             anchors.margins: 10
-            Text { text: 'Nom du sprite' }
+            Text {
+                text: 'Nom du sprite'
+            }
             TextInputField {
                 id: s_name
                 text: ""
                 placeholderText: "sprite"
             }
-            Text { text: 'FrameWidth' }
+            Text {
+                text: 'FrameWidth'
+            }
             TextInputField {
                 id: s_frameWidth
                 text: "0"
                 placeholderText: "frameWidth"
             }
-            Text { text: 'FrameHeight' }
+            Text {
+                text: 'FrameHeight'
+            }
             TextInputField {
                 id: s_frameHeight
                 text: "0"
                 placeholderText: "frameHeight"
             }
-            Text { text: 'frameCount' }
+            Text {
+                text: 'frameCount'
+            }
             TextInputField {
                 id: s_frameCount
                 text: "10"
                 placeholderText: "frameCount"
             }
-            Text { text: 'FrameDuration' }
+            Text {
+                text: 'FrameDuration'
+            }
             TextInputField {
                 id: s_frameDuration
                 text: "60"
                 placeholderText: "frameDuration"
             }
-            Text { text: 'Source' }
+            Text {
+                text: 'Source'
+            }
             TextInputField {
                 id: s_source
                 text: ""
@@ -301,7 +328,7 @@ ApplicationWindow {
                     anchors.right: parent.right
                     anchors.rightMargin: 10
                     text: 'Parcourir'
-                    onClicked:  {
+                    onClicked: {
                         openFn.open()
                     }
                 }
@@ -398,7 +425,8 @@ ApplicationWindow {
                     color: '#ccc'
                     SpriteSequence {
                         id: sprite
-                        property var spriteSt: []
+                        property
+                        var spriteSt: []
                         anchors.centerIn: parent
                         width: 256
                         height: 256
@@ -411,7 +439,7 @@ ApplicationWindow {
                         function onNews() {
                             sprite.spriteSt = []
                             let sp = spriteModel.get(spriterListView.currentIndex).sprites
-                            for(let i =0; i< sp.count; i++) {
+                            for (let i = 0; i < sp.count; i++) {
                                 let item = sp.get(i)
                                 sprite.spriteSt.push(item.name)
                                 let sc = window.createObject(spriteComponent, sprite, JSON.parse(JSON.stringify(item)))
