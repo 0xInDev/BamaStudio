@@ -43,7 +43,7 @@ jobs:
         name: 🔨 BaMaStudio
         if: matrix.os != 'windows-latest'
         run: |
-          cmake --build build --target "BuMa" --config "Release" -j 
+          cmake --build build --target "BaMaStudio" --config "Release" -j 
       -
         name: 🔨 BaMaStudio (Windows)
         if: matrix.os == 'windows-latest'
@@ -53,5 +53,5 @@ jobs:
         if: matrix.os == 'windows-latest'
         with:
           retention-days: 2
-          name: "BaMaStudioInstallerX64Release Binary"
+          name: "BaMaStudioInstallerX64Release"
           path: "build/BaMaStudioInstallerX64Release.exe"
