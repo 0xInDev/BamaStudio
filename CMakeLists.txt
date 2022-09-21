@@ -10,7 +10,19 @@ if(WIN32)
     set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /Zc:__cplusplus /permissive-")
 endif()
 
-find_package(Qt6 6.2 COMPONENTS Quick QuickControls2 REQUIRED)
+find_package(Qt6 6.2 COMPONENTS Quick QuickControls2 Xml Svg REQUIRED)
+
+
+include(FetchContent)
+FetchContent_Declare(
+  SIUtils
+  GIT_REPOSITORY https://github.com/ssakone/SIUtils.git
+  GIT_TAG        main
+)
+FetchContent_MakeAvailable(SIUtils)
+
+include_directories(${SIUtils_SOURCE_DIR}/src)
+
 
 add_subdirectory(QtWindowsCMake)
 
@@ -26,7 +38,7 @@ qt_add_qml_module(BaMaStudio
 )
 
 target_link_libraries(BaMaStudio
-    PRIVATE Qt6::Quick Qt6::QuickControls2)
+    PRIVATE Qt6::Quick Qt6::Xml Qt6::Svg Qt6::QuickControls2 SIUtils)
 
 if (WIN32)
     add_qt_windows_exe(BaMaStudio

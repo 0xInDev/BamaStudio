@@ -5,12 +5,19 @@ import QtQuick.Dialogs
 
 import BStudio
 
+import SIUtils
+
 ApplicationWindow {
     id: window
     width: 1280
-    height: 500
+    height: 750
     visible: true
     title: qsTr("Bama Studio")
+    property string projectName: ""
+    property bool projectFileExist: false
+    property string projectPath: ""
+    property string projectData: ""
+    property bool projectUpdated: false
     signal news()
 
     component TextInputField: TextField {
@@ -28,6 +35,76 @@ ApplicationWindow {
         }
     }
 
+    function saveProject() {
+        let data = []
+        let projectData = {
+            name: window.projectName
+        }
+        for (let i = 0; i < spriteModel.count; i++) {
+            let elem = spriteModel.get(i)
+            data.push(elem)
+        }
+        projectData['spriteSequences'] = data
+        window.projectData = JSON.stringify(projectData)
+        if (window.projectFileExist) {
+            SIUtils.writeText(window.projectPath, window.projectData)
+        } else {
+            saveDialog.open()
+        }
+    }
+
+    function saveAsProject() {
+        let data = []
+        let projectData = {
+            name: window.projectName
+        }
+        for (let i = 0; i < spriteModel.count; i++) {
+            let elem = spriteModel.get(i)
+            data.push(elem)
+        }
+        projectData['spriteSequences'] = data
+        window.projectData = JSON.stringify(projectData)
+        saveDialog.open()
+    }
+
+    function openProject(currentFile) {
+        let data = SIUtils.readText(currentFile.toString().replace("file://", ""))
+        let datas = JSON.parse(data)
+        console.log(data)
+        window.projectName = datas['name']
+        spriteModel.clear()
+        for (let i = 0; i < datas['spriteSequences'].length; i++) {
+            spriteModel.append(datas['spriteSequences'][i])
+        }
+        stackView.push(sViewer)
+        window.news()
+        window.projectFileExist = true
+        window.projectPath = currentFile.toString().replace("file://", "")
+    }
+
+    FileDialog {
+        id: saveDialog
+        fileMode: FileDialog.SaveFile
+        nameFilters: ["Project files (*.bsp)"]
+        defaultSuffix: 'bsp'
+        acceptLabel: "Enregistrer"
+        onAccepted: {
+            SIUtils.writeText(currentFile.toString().replace("file://", ""), window.projectData)
+            window.projectPath = currentFile.toString().replace("file://", "")
+            window.projectFileExist = true
+            console.log("saved")
+        }
+    }
+
+    FileDialog {
+        id: openDialog
+        fileMode: FileDialog.OpenFile
+        nameFilters: ["Project files (*.bsp)"]
+        defaultSuffix: 'bsp'
+        acceptLabel: "Ouvrir"
+        onAccepted: openProject(currentFile)
+    }
+
     Component {
         id: spriteComponent
         Sprite {
@@ -35,8 +112,8 @@ ApplicationWindow {
         }
     }
 
-    function createObject(component, parent,sub={}) {
-        var sprite = component.createObject(parent,sub);
+    function createObject(component, parent, sub = {}) {
+        var sprite = component.createObject(parent, sub);
         return sprite;
     }
 
@@ -45,16 +122,19 @@ ApplicationWindow {
             title: qsTr("&Fichier")
             Action {
                 text: qsTr("&Nouveau...")
-                onTriggered: newDialog.open()//stackView.push(sViewer)
+                onTriggered: newDialog.open() //stackView.push(sViewer)
             }
             Action {
                 text: qsTr("&Ouvrir...")
+                onTriggered: openDialog.open()
             }
             Action {
                 text: qsTr("&Enregistrer")
+                onTriggered: window.saveProject()
             }
             Action {
                 text: qsTr("Enregistrer sous...")
+                onTriggered: window.saveAsProject()
             }
             MenuSeparator {}
             Action {
@@ -97,31 +177,41 @@ ApplicationWindow {
         ColumnLayout {
             anchors.fill: parent
             anchors.margins: 10
-            Text { text: 'Nom du project' }
+            Text {
+                text: 'Nom du project'
+            }
             TextInputField {
                 id: p_name
                 text: ""
                 placeholderText: "Nom du project"
             }
-            Text { text: 'Width' }
+            Text {
+                text: 'Width'
+            }
             TextInputField {
                 id: p_width
                 text: "0"
                 placeholderText: "width"
             }
-            Text { text: 'Height' }
+            Text {
+                text: 'Height'
+            }
             TextInputField {
                 id: p_height
                 text: "0"
                 placeholderText: "height"
             }
-            Text { text: 'FrameWidth' }
+            Text {
+                text: 'FrameWidth'
+            }
             TextInputField {
                 id: p_frameWidth
                 text: "0"
                 placeholderText: "frameWidth"
             }
-            Text { text: 'FrameHeight' }
+            Text {
+                text: 'FrameHeight'
+            }
             TextInputField {
                 id: p_frameHeight
                 text: "0"
@@ -140,6 +230,7 @@ ApplicationWindow {
                         frameHeight: parseFloat(p_frameHeight.text),
                         sprites: []
                     }
+                    window.projectName = p_name.text.replace(" ", "-")
                     spriteModel.append(data)
                     newDialog.close()
                     stackView.push(sViewer)
@@ -167,44 +258,57 @@ ApplicationWindow {
     }
     Popup {
         id: new_sprite_dialog
-        property var spriterListView
+        property
+        var spriterListView
         anchors.centerIn: parent
         width: 450
         height: 700
         ColumnLayout {
             anchors.fill: parent
             anchors.margins: 10
-            Text { text: 'Nom du sprite' }
+            Text {
+                text: 'Nom du sprite'
+            }
             TextInputField {
                 id: s_name
                 text: ""
                 placeholderText: "sprite"
             }
-            Text { text: 'FrameWidth' }
+            Text {
+                text: 'FrameWidth'
+            }
             TextInputField {
                 id: s_frameWidth
                 text: "0"
                 placeholderText: "frameWidth"
             }
-            Text { text: 'FrameHeight' }
+            Text {
+                text: 'FrameHeight'
+            }
             TextInputField {
                 id: s_frameHeight
                 text: "0"
                 placeholderText: "frameHeight"
             }
-            Text { text: 'frameCount' }
+            Text {
+                text: 'frameCount'
+            }
             TextInputField {
                 id: s_frameCount
                 text: "10"
                 placeholderText: "frameCount"
             }
-            Text { text: 'FrameDuration' }
+            Text {
+                text: 'FrameDuration'
+            }
             TextInputField {
                 id: s_frameDuration
                 text: "60"
                 placeholderText: "frameDuration"
             }
-            Text { text: 'Source' }
+            Text {
+                text: 'Source'
+            }
             TextInputField {
                 id: s_source
                 text: ""
@@ -224,7 +328,7 @@ ApplicationWindow {
                     anchors.right: parent.right
                     anchors.rightMargin: 10
                     text: 'Parcourir'
-                    onClicked:  {
+                    onClicked: {
                         openFn.open()
                     }
                 }
@@ -266,10 +370,48 @@ ApplicationWindow {
                         console.log(currentIndex)
                     }
 
-                    delegate: ItemDelegate {
-                        text: name + (spriterListView.currentIndex === index ? " (selected)" : "")
+                    delegate: Column {
                         width: spriterListView.width
-                        onClicked: spriterListView.currentIndex = index
+                        ItemDelegate {
+                            spacing: 1
+                            text: name + (spriterListView.currentIndex === index ? " (selected)" : "")
+                            width: spriterListView.width
+                            onClicked: spriterListView.currentIndex = index
+                            background: Rectangle {
+                                color: "#ccc"
+                            }
+                        }
+                        Repeater {
+                            model: spriteModel.get(spriterListView.currentIndex).sprites
+                            ItemDelegate {
+                                text: name
+                                x: 20
+                                width: spriterListView.width - 20
+                                onClicked: sprite.jumpTo(name)
+                                background: Rectangle {
+                                    color: hovered ? "#ccc" : "#dbdbdb"
+                                }
+
+                                HoverHandler {
+                                    cursorShape: "PointingHandCursor"
+                                }
+                            }
+                        }
+                    }
+
+                    footer: Item {
+                        width: spriterListView.width
+                        height: 40
+                        Button {
+                            text: 'Add'
+                            anchors.verticalCenter: parent.verticalCenter
+                            anchors.right: parent.right
+                            anchors.rightMargin: 10
+                            onClicked: {
+                                new_sprite_dialog.spriterListView = spriterListView
+                                new_sprite_dialog.open()
+                            }
+                        }
                     }
                 }
             }
@@ -283,7 +425,8 @@ ApplicationWindow {
                     color: '#ccc'
                     SpriteSequence {
                         id: sprite
-                        property var spriteSt: []
+                        property
+                        var spriteSt: []
                         anchors.centerIn: parent
                         width: 256
                         height: 256
@@ -296,41 +439,12 @@ ApplicationWindow {
                         function onNews() {
                             sprite.spriteSt = []
                             let sp = spriteModel.get(spriterListView.currentIndex).sprites
-                            for(let i =0; i< sp.count; i++) {
+                            for (let i = 0; i < sp.count; i++) {
                                 let item = sp.get(i)
                                 sprite.spriteSt.push(item.name)
                                 let sc = window.createObject(spriteComponent, sprite, JSON.parse(JSON.stringify(item)))
                                 sprite.sprites.push(sc)
                             }
-                        }
-                    }
-                }
-
-                Rectangle {
-                    SplitView.preferredHeight: 60
-                    SplitView.fillWidth: true
-
-                    Row {
-                        anchors.verticalCenter: parent.verticalCenter
-                        x: 10
-                        spacing: 10
-                        Repeater {
-                            model: spriteModel.get(spriterListView.currentIndex).sprites
-                            Button {
-                                text: name
-                                onClicked: sprite.jumpTo(name)
-                            }
-                        }
-                    }
-
-                    Button {
-                        anchors.verticalCenter: parent.verticalCenter
-                        anchors.right: parent.right
-                        anchors.rightMargin: 10
-                        text: 'Add'
-                        onClicked: {
-                            new_sprite_dialog.spriterListView = spriterListView
-                            new_sprite_dialog.open()
                         }
                     }
                 }

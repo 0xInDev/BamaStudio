@@ -21,7 +21,7 @@ Window {
         id: fsDialog
         fileMode: FileDialog.SaveFile
         onAccepted: {
-            imageBox.grabToImage(function(im){
+            imageBox.grabToImage(function(im) {
                 im.saveToFile(currentFile)
                 console.log('success')
             })
