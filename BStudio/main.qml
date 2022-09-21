@@ -343,10 +343,48 @@ ApplicationWindow {
                         console.log(currentIndex)
                     }
 
-                    delegate: ItemDelegate {
-                        text: name + (spriterListView.currentIndex === index ? " (selected)" : "")
+                    delegate: Column {
                         width: spriterListView.width
-                        onClicked: spriterListView.currentIndex = index
+                        ItemDelegate {
+                            spacing: 1
+                            text: name + (spriterListView.currentIndex === index ? " (selected)" : "")
+                            width: spriterListView.width
+                            onClicked: spriterListView.currentIndex = index
+                            background: Rectangle {
+                                color: "#ccc"
+                            }
+                        }
+                        Repeater {
+                            model: spriteModel.get(spriterListView.currentIndex).sprites
+                            ItemDelegate {
+                                text: name
+                                x: 20
+                                width: spriterListView.width - 20
+                                onClicked: sprite.jumpTo(name)
+                                background: Rectangle {
+                                    color: hovered ? "#ccc" : "#dbdbdb"
+                                }
+
+                                HoverHandler {
+                                    cursorShape: "PointingHandCursor"
+                                }
+                            }
+                        }
+                    }
+
+                    footer: Item {
+                        width: spriterListView.width
+                        height: 40
+                        Button {
+                            text: 'Add'
+                            anchors.verticalCenter: parent.verticalCenter
+                            anchors.right: parent.right
+                            anchors.rightMargin: 10
+                            onClicked: {
+                                new_sprite_dialog.spriterListView = spriterListView
+                                new_sprite_dialog.open()
+                            }
+                        }
                     }
                 }
             }
@@ -379,35 +417,6 @@ ApplicationWindow {
                                 let sc = window.createObject(spriteComponent, sprite, JSON.parse(JSON.stringify(item)))
                                 sprite.sprites.push(sc)
                             }
-                        }
-                    }
-                }
-
-                Rectangle {
-                    SplitView.preferredHeight: 60
-                    SplitView.fillWidth: true
-
-                    Row {
-                        anchors.verticalCenter: parent.verticalCenter
-                        x: 10
-                        spacing: 10
-                        Repeater {
-                            model: spriteModel.get(spriterListView.currentIndex).sprites
-                            Button {
-                                text: name
-                                onClicked: sprite.jumpTo(name)
-                            }
-                        }
-                    }
-
-                    Button {
-                        anchors.verticalCenter: parent.verticalCenter
-                        anchors.right: parent.right
-                        anchors.rightMargin: 10
-                        text: 'Add'
-                        onClicked: {
-                            new_sprite_dialog.spriterListView = spriterListView
-                            new_sprite_dialog.open()
                         }
                     }
                 }
